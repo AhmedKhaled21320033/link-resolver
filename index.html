@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فك الروابط - Family Farm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-area {
+            width: 100%;
+            padding: 15px;
+            font-size: 14px;
+            font-family: monospace;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            resize: vertical;
+        }
+
+        .input-area:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-copy {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-clear {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-sample {
+            background: #4299e1;
+            color: white;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 30px;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .log-area {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #4a5568;
+            font-size: 11px;
+        }
+
+        .results-area {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: #f7fafc;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-right: 4px solid #48bb78;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result-item.failed {
+            border-right-color: #e53e3e;
+            opacity: 0.7;
+        }
+
+        .result-original {
+            color: #718096;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .result-resolved {
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .result-resolved a {
+            color: #4299e1;
+            text-decoration: none;
+        }
+
+        .result-resolved a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .status-running {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔓 فك الروابط - Family Farm</h1>
+            <p>أدخل الروابط وسيتم فكها مباشرة لحظة بلحظة</p>
+        </div>
+
+        <div class="card">
+            <textarea id="linksInput" class="input-area" rows="6" placeholder="ضع الروابط هنا&#10;مثال:&#10;https://cutt.ty.rf.gd/kiLlslF&#10;114. https://cutt.ty.rf.gd/kiLnMus"></textarea>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="startResolving()" id="startBtn">
+                    🚀 تشغيل
+                </button>
+                <button class="btn-copy" onclick="copyOnlyResolved()" id="copyBtn" disabled>
+                    📋 نسخ المفكوك فقط
+                </button>
+                <button class="btn-sample" onclick="fillSample()">
+                    📝 نموذج
+                </button>
+                <button class="btn-clear" onclick="clearAll()">
+                    🗑️ مسح
+                </button>
+            </div>
+
+            <div id="progressArea" style="display: none;">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar">0%</div>
+                </div>
+                <div class="progress-stats">
+                    <span>✅ <span id="successCount">0</span> مفكوك</span>
+                    <span>❌ <span id="failedCount">0</span> فاشل</span>
+                    <span>📊 <span id="completedCount">0</span>/<span id="totalCount">0</span></span>
+                </div>
+            </div>
+
+            <div class="log-area" id="logArea" style="display: none;"></div>
+        </div>
+
+        <div class="card" id="resultsCard" style="display: none;">
+            <h3>📊 النتائج المباشرة</h3>
+            <div class="results-area" id="resultsArea"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let resolvedLinks = []; // تخزين الروابط المفكوكة فقط للنسخ
+        let currentEventSource = null;
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = isError ? '#e53e3e' : '#48bb78';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            logArea.style.display = 'block';
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function addResultDirectly(original, resolved, success) {
+            const resultsArea = document.getElementById('resultsArea');
+            const resultsCard = document.getElementById('resultsCard');
+            resultsCard.style.display = 'block';
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result-item ${!success ? 'failed' : ''}`;
+            resultDiv.innerHTML = `
+                <div class="result-original">🔗 ${original}</div>
+                <div class="result-resolved">
+                    ${success ? 
+                        `✅ <a href="${resolved}" target="_blank">${resolved}</a>` : 
+                        '❌ فشل في فك الرابط'}
+                </div>
+            `;
+            resultsArea.appendChild(resultDiv);
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function updateProgress(completed, total, success, failed) {
+            const percentage = (completed / total) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressBar').textContent = `${Math.round(percentage)}%`;
+            document.getElementById('successCount').textContent = success;
+            document.getElementById('failedCount').textContent = failed;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        function copyOnlyResolved() {
+            if (resolvedLinks.length === 0) {
+                showToast('⚠️ لا توجد روابط مفكوكة للنسخ', true);
+                return;
+            }
+            
+            const copyText = resolvedLinks.join('\n');
+            
+            navigator.clipboard.writeText(copyText).then(() => {
+                showToast(`✅ تم نسخ ${resolvedLinks.length} رابط مفكوك`);
+            }).catch(() => {
+                showToast('❌ فشل في النسخ', true);
+            });
+        }
+
+        function fillSample() {
+            const sample = `114. https://cutt.ty.rf.gd/kiLnMus
+115. https://cutt.ty.rf.gd/kiLnOlO
+116. https://cutt.ty.rf.gd/kiLnQaw
+117. https://cutt.ty.rf.gd/kiLnRXy
+118. https://cutt.ty.rf.gd/kiLnTzg
+119. https://cutt.ty.rf.gd/kiLnVBX
+120. https://cutt.ty.rf.gd/kiLnXqB`;
+            document.getElementById('linksInput').value = sample;
+            showToast('📝 تم تعبئة الروابط التجريبية');
+        }
+
+        function clearAll() {
+            document.getElementById('linksInput').value = '';
+            document.getElementById('resultsArea').innerHTML = '';
+            document.getElementById('logArea').innerHTML = '';
+            document.getElementById('logArea').style.display = 'none';
+            document.getElementById('resultsCard').style.display = 'none';
+            document.getElementById('progressArea').style.display = 'none';
+            document.getElementById('copyBtn').disabled = true;
+            resolvedLinks = [];
+            
+            if (currentEventSource) {
+                currentEventSource.close();
+                currentEventSource = null;
+            }
+            
+            showToast('🗑️ تم مسح الكل');
+        }
+
+        async function startResolving() {
+            // تنظيف سابق
+            if (currentEventSource) {
+                currentEventSource.close();
+                currentEventSource = null;
+            }
+            
+            const linksText = document.getElementById('linksInput').value;
+            const links = linksText.split('\n')
+                .map(l => l.trim())
+                .filter(l => l)
+                .map(l => l.replace(/^\d+\.\s*/, ''))
+                .filter(l => l.startsWith('http://') || l.startsWith('https://'));
+            
+            if (links.length === 0) {
+                showToast('⚠️ من فضلك أدخل روابط صحيحة', true);
+                return;
+            }
+            
+            // إعادة تعيين المتغيرات
+            resolvedLinks = [];
+            document.getElementById('resultsArea').innerHTML = '';
+            document.getElementById('logArea').innerHTML = '';
+            document.getElementById('logArea').style.display = 'block';
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('progressArea').style.display = 'block';
+            document.getElementById('copyBtn').disabled = true;
+            
+            updateProgress(0, links.length, 0, 0);
+            addLog(`🚀 بدء فك ${links.length} رابط...`);
+            
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span class="spinner"></span> جاري...';
+            
+            try {
+                const response = await fetch('/resolve-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ links })
+                });
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n\n');
+                    buffer = lines.pop();
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('event: ')) {
+                            const eventType = line.split('\n')[0].replace('event: ', '');
+                            const dataLine = line.split('\n')[1];
+                            if (dataLine && dataLine.startsWith('data: ')) {
+                                const data = JSON.parse(dataLine.replace('data: ', ''));
+                                
+                                if (eventType === 'result') {
+                                    if (data.success) {
+                                        resolvedLinks.push(data.resolved);
+                                        addResultDirectly(data.original, data.resolved, true);
+                                    } else {
+                                        addResultDirectly(data.original, null, false);
+                                    }
+                                    updateProgress(data.completed, data.total, data.successCount, data.failedCount);
+                                    
+                                    // تفعيل زر النسخ عند وجود روابط مفكوكة
+                                    if (resolvedLinks.length > 0) {
+                                        document.getElementById('copyBtn').disabled = false;
+                                    }
+                                } 
+                                else if (eventType === 'log') {
+                                    addLog(data.message);
+                                }
+                                else if (eventType === 'complete') {
+                                    addLog(`✅ تم الانتهاء! نجح: ${data.successCount} فشل: ${data.failedCount}`);
+                                    showToast(`✅ تم فك ${data.successCount} من ${data.total} رابط`);
+                                    startBtn.disabled = false;
+                                    startBtn.innerHTML = '🚀 تشغيل';
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                addLog(`❌ خطأ: ${error.message}`);
+                showToast('❌ حدث خطأ في الاتصال', true);
+                startBtn.disabled = false;
+                startBtn.innerHTML = '🚀 تشغيل';
+            }
+        }
+    </script>
+</body>
+</html>
